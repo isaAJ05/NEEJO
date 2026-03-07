@@ -1,0 +1,354 @@
+# Guía de Inicio Rápido
+
+Esta guía te ayudará a levantar el proyecto completo en tu máquina local en menos de 10 minutos.
+
+---
+
+## 📋 Pre-requisitos
+
+Asegúrate de tener instalado:
+
+- **Node.js** ≥ 18.0.0 ([Descargar](https://nodejs.org/))
+- **PostgreSQL** ≥ 14 ([Descargar](https://www.postgresql.org/download/))
+- **Git** ([Descargar](https://git-scm.com/))
+- **npm** ≥ 9.0.0 (incluido con Node.js)
+
+---
+
+## 🚀 Paso 1: Clonar el Repositorio
+
+```bash
+git clone https://github.com/grupo5/contratacion-servicio-mvp.git
+cd contratacion-servicio-mvp
+```
+
+---
+
+## 📦 Paso 2: Instalar Dependencias
+
+### Opción A: Instalación automática (recomendado)
+
+```bash
+npm run install:all
+```
+
+### Opción B: Instalación manual
+
+```bash
+# Raíz del proyecto
+npm install
+
+# Backend
+cd apps/backend
+npm install
+
+# Frontend
+cd ../frontend
+npm install
+```
+
+---
+
+## 🗄️ Paso 3: Configurar Base de Datos
+
+### 3.1. Crear la base de datos en PostgreSQL
+
+```bash
+# Conectarse a PostgreSQL
+psql -U postgres
+
+# Crear la base de datos
+CREATE DATABASE contratacion_db;
+
+# Crear usuario (opcional)
+CREATE USER contratacion_user WITH PASSWORD 'secure_password';
+GRANT ALL PRIVILEGES ON DATABASE contratacion_db TO contratacion_user;
+
+# Salir
+\q
+```
+
+### 3.2. Configurar variables de entorno
+
+Crea el archivo `apps/backend/.env`:
+
+```bash
+cd apps/backend
+cp .env.example .env
+```
+
+Edita `apps/backend/.env`:
+
+```env
+DATABASE_URL="postgresql://postgres:tu_password@localhost:5432/contratacion_db?schema=public"
+PORT=3000
+NODE_ENV=development
+APP_NAME="Contratación de Servicio API"
+API_PREFIX=api/v1
+```
+
+### 3.3. Ejecutar migraciones
+
+```bash
+cd apps/backend
+npx prisma migrate dev --name init
+npx prisma generate
+```
+
+**Salida esperada:**
+
+```
+✔ Generated Prisma Client
+✔ Applied migration: 20260306_init
+```
+
+---
+
+## 🎬 Paso 4: Iniciar los Servicios
+
+### Opción A: Iniciar todo en paralelo (recomendado)
+
+Desde la raíz del proyecto:
+
+```bash
+npm run dev
+```
+
+Esto levanta:
+
+- Backend en `http://localhost:3000`
+- Frontend en `http://localhost:5173`
+
+### Opción B: Iniciar por separado
+
+**Terminal 1 - Backend:**
+
+```bash
+cd apps/backend
+npm run start:dev
+```
+
+**Terminal 2 - Frontend:**
+
+```bash
+cd apps/frontend
+npm run dev
+```
+
+---
+
+## ✅ Paso 5: Verificar que Todo Funciona
+
+### 5.1. Verificar Backend
+
+Abre en tu navegador: `http://localhost:3000/api/v1/solicitudes`
+
+Deberías ver:
+
+```json
+{
+  "total": 0,
+  "solicitudes": []
+}
+```
+
+### 5.2. Verificar Frontend
+
+Abre: `http://localhost:5173`
+
+Deberías ver la página de inicio del sistema.
+
+### 5.3. Crear datos de prueba (opcional)
+
+#### Opción 1: Desde Prisma Studio (UI visual)
+
+```bash
+cd apps/backend
+npx prisma studio
+```
+
+Se abrirá `http://localhost:5555` donde puedes crear usuarios y solicitudes visualmente.
+
+#### Opción 2: Desde la UI del Frontend
+
+1. Ve a `http://localhost:5173/crear-solicitud`
+2. Completa el formulario
+3. Haz clic en "Crear Solicitud"
+
+#### Opción 3: Con cURL (terminal)
+
+```bash
+curl -X POST http://localhost:3000/api/v1/solicitudes \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Desarrollo web corporativo",
+    "descripcion": "Necesito un sitio responsive",
+    "clienteId": "USER-DEMO-001",
+    "tipoServicio": "POR_TAREA",
+    "presupuestoEstimado": 5000
+  }'
+```
+
+---
+
+## 🧪 Paso 6: Ejecutar Tests (Opcional)
+
+### Backend
+
+```bash
+cd apps/backend
+npm run test
+npm run test:e2e
+```
+
+### Frontend
+
+```bash
+cd apps/frontend
+npm run test
+```
+
+---
+
+## 📚 Estructura del Proyecto Explicada
+
+```
+NIDIU/
+├── apps/
+│   ├── backend/              # API REST en NestJS
+│   │   ├── src/
+│   │   │   ├── modules/
+│   │   │   │   └── contratacion/
+│   │   │   │       ├── application/    # Casos de uso, Commands
+│   │   │   │       ├── domain/         # Factory, entidades
+│   │   │   │       ├── infrastructure/ # Facade, Prisma
+│   │   │   │       └── presentation/   # Controladores
+│   │   │   ├── main.ts
+│   │   │   └── app.module.ts
+│   │   └── prisma/
+│   │       └── schema.prisma
+│   └── frontend/             # UI en React
+│       └── src/
+│           ├── modules/contratacion/
+│           │   ├── pages/
+│           │   ├── components/
+│           │   └── api/
+│           └── app/
+├── docs/                     # Documentación completa
+│   ├── patterns/             # Explicación de patrones
+│   ├── api/                  # Documentación de endpoints
+│   └── db/                   # Modelo de datos
+└── package.json
+```
+
+---
+
+## 🔧 Comandos Útiles
+
+### Base de Datos
+
+```bash
+npm run db:migrate      # Ejecutar migraciones
+npm run db:generate     # Generar cliente Prisma
+npm run db:studio       # Abrir Prisma Studio (UI)
+```
+
+### Desarrollo
+
+```bash
+npm run backend:dev     # Solo backend
+npm run frontend:dev    # Solo frontend
+npm run dev             # Ambos en paralelo
+```
+
+### Producción
+
+```bash
+npm run backend:build   # Compilar backend
+npm run frontend:build  # Compilar frontend
+```
+
+### Tests
+
+```bash
+npm run backend:test    # Tests de backend
+npm run frontend:test   # Tests de frontend
+```
+
+---
+
+## 🐛 Solución de Problemas Comunes
+
+### Error: "Cannot connect to PostgreSQL"
+
+**Solución:**
+
+1. Verifica que PostgreSQL esté corriendo:
+   ```bash
+   # Windows
+   pg_isready
+   # o
+   Get-Service postgresql*
+   ```
+2. Revisa que el `DATABASE_URL` en `.env` sea correcto
+
+### Error: "Port 3000 already in use"
+
+**Solución:**
+Cambia el puerto en `apps/backend/.env`:
+
+```env
+PORT=3001
+```
+
+### Error: "Prisma Client is not generated"
+
+**Solución:**
+
+```bash
+cd apps/backend
+npx prisma generate
+```
+
+### Frontend no carga estilos correctamente
+
+**Solución:**
+
+```bash
+cd apps/frontend
+rm -rf node_modules
+npm install
+npm run dev
+```
+
+---
+
+## 📖 Próximos Pasos
+
+1. **Explora la documentación:**
+   - [Patrones de Diseño](docs/patterns/README.md)
+   - [API Endpoints](docs/api/README.md)
+   - [Modelo de Datos](docs/db/README.md)
+
+2. **Prueba los 4 patrones:**
+   - Factory: Crea solicitudes de diferentes tipos
+   - Facade: Usa el endpoint `/contratacion/contratar`
+   - Command: Cancela, reprograma o confirma órdenes
+   - Template Method: Revisa el código en `domain/services/`
+
+3. **Contribuye al proyecto:**
+   - Crea un branch: `git checkout -b feature/mi-funcionalidad`
+   - Haz tus cambios
+   - Abre un Pull Request usando la plantilla
+
+---
+
+## 🆘 ¿Necesitas Ayuda?
+
+- **Issues:** [GitHub Issues](https://github.com/grupo5/contratacion-servicio-mvp/issues)
+- **Documentación completa:** Revisa la carpeta `/docs/`
+- **Contacto del equipo:** Consulta el README principal
+
+---
+
+¡Listo! Ya tienes el proyecto corriendo. 🎉

@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENTIDAD 1: Usuario
+// ============================================
+model Usuario {
+  id        String   @id @default(uuid())
+  nombre    String
+  email     String   @unique
+  telefono  String?
+  rol       RolUsuario @default(CLIENTE)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  solicitudesCreadas SolicitudServicio[]
+  ordenesComoCliente OrdenServicio[] @relation("ClienteRelacion")
+  ordenesComoProveedor OrdenServicio[] @relation("ProveedorRelacion")
+
+  @@map("usuarios")
+}
+
+enum RolUsuario {
+  CLIENTE
+  PROVEEDOR
+  AMBOS
+}
+
+// ============================================
+// ENTIDAD 2: SolicitudServicio
+// ============================================
+model SolicitudServicio {
+  id          String   @id @default(uuid())
+  titulo      String
+  descripcion String
+  clienteId   String
+  tipoServicio TipoServicio
+  presupuestoEstimado Float?
+  estado      EstadoSolicitud @default(PENDIENTE)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  cliente     Usuario @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  cotizaciones Cotizacion[]
+  ordenes     OrdenServicio[]
+
+  @@map("solicitudes_servicio")
+  @@index([clienteId])
+  @@index([estado])
+  @@index([tipoServicio])
+}
+
+enum TipoServicio {
+  POR_HORAS
+  POR_TAREA
+  POR_PAQUETE
+}
+
+enum EstadoSolicitud {
+  PENDIENTE
+  EN_COTIZACION
+  COTIZADA
+  ACEPTADA
+  RECHAZADA
+  CANCELADA
+}
+
+// ============================================
+// ENTIDAD 3: Cotizacion
+// ============================================
+model Cotizacion {
+  id              String   @id @default(uuid())
+  solicitudId     String
+  montoTotal      Float
+  duracionEstimadaHoras Float?
+  descripcionDetalle String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relaciones
+  solicitud       SolicitudServicio @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
+  orden           OrdenServicio?
+
+  @@map("cotizaciones")
+  @@index([solicitudId])
+}
+
+// ============================================
+// ENTIDAD 4: OrdenServicio
+// ============================================
+model OrdenServicio {
+  id              String   @id @default(uuid())
+  codigoOrden     String   @unique
+  solicitudId     String
+  cotizacionId    String   @unique
+  clienteId       String
+  proveedorId     String?
+  tipoServicio    TipoServicio
+  montoTotal      Float
+  estado          EstadoOrden @default(CREADA)
+  fechaInicio     DateTime?
+  fechaFinalizacion DateTime?
+  motivoCancelacion String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relaciones
+  solicitud       SolicitudServicio @relation(fields: [solicitudId], references: [id])
+  cotizacion      Cotizacion @relation(fields: [cotizacionId], references: [id])
+  cliente         Usuario @relation("ClienteRelacion", fields: [clienteId], references: [id])
+  proveedor       Usuario? @relation("ProveedorRelacion", fields: [proveedorId], references: [id])
+  historialEstados HistorialEstado[]
+
+  @@map("ordenes_servicio")
+  @@index([clienteId])
+  @@index([proveedorId])
+  @@index([estado])
+  @@index([tipoServicio])
+  @@index([createdAt])
+}
+
+enum EstadoOrden {
+  CREADA
+  ASIGNADA
+  EN_PROGRESO
+  COMPLETADA
+  CANCELADA
+  REPROGRAMADA
+}
+
+// ============================================
+// ENTIDAD 5: HistorialEstado (Auditoría)
+// ============================================
+model HistorialEstado {
+  id              String   @id @default(uuid())
+  ordenId         String
+  estadoAnterior  EstadoOrden?
+  estadoNuevo     EstadoOrden
+  motivo          String?
+  cambiadoPor     String?  // Podría ser usuario o sistema
+  
+  createdAt       DateTime @default(now())
+
+  // Relaciones
+  orden           OrdenServicio @relation(fields: [ordenId], references: [id], onDelete: Cascade)
+
+  @@map("historial_estados")
+  @@index([ordenId])
+  @@index([createdAt])
+}

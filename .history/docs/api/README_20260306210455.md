@@ -1,0 +1,390 @@
+# Documentación de API - Módulo Contratación
+
+## Base URL
+
+```
+http://localhost:3000/api/v1
+```
+
+---
+
+## 📋 Endpoints Implementados
+
+### 1. Crear Solicitud de Servicio
+
+**POST** `/solicitudes`
+
+Crea una nueva solicitud de servicio en el sistema.
+
+**Body:**
+
+```json
+{
+  "titulo": "Desarrollo de sitio web corporativo",
+  "descripcion": "Necesito un sitio web responsive con 5 páginas",
+  "clienteId": "USER-DEMO-001",
+  "tipoServicio": "POR_TAREA",
+  "presupuestoEstimado": 5000.0
+}
+```
+
+**Respuesta exitosa (201):**
+
+```json
+{
+  "mensaje": "Solicitud creada exitosamente",
+  "solicitud": {
+    "id": "uuid",
+    "titulo": "Desarrollo de sitio web corporativo",
+    "descripcion": "Necesito un sitio web responsive con 5 páginas",
+    "clienteId": "USER-DEMO-001",
+    "tipoServicio": "POR_TAREA",
+    "presupuestoEstimado": 5000.0,
+    "estado": "PENDIENTE",
+    "createdAt": "2026-03-06T10:00:00.000Z",
+    "cliente": {
+      "id": "USER-DEMO-001",
+      "nombre": "Juan Pérez",
+      "email": "juan@example.com"
+    }
+  }
+}
+```
+
+---
+
+### 2. Listar Solicitudes
+
+**GET** `/solicitudes`
+
+Obtiene todas las solicitudes de servicio registradas.
+
+**Respuesta exitosa (200):**
+
+```json
+{
+  "total": 10,
+  "solicitudes": [
+    {
+      "id": "uuid",
+      "titulo": "Desarrollo de sitio web",
+      "estado": "PENDIENTE",
+      "tipoServicio": "POR_TAREA",
+      "presupuestoEstimado": 5000.0,
+      "createdAt": "2026-03-06T10:00:00.000Z",
+      "cliente": { "nombre": "Juan Pérez" }
+    }
+  ]
+}
+```
+
+---
+
+### 3. Obtener Orden Específica
+
+**GET** `/ordenes/:id`
+
+Consulta los detalles completos de una orden de servicio.
+
+**Parámetros:**
+
+- `id` (path): UUID de la orden
+
+**Respuesta exitosa (200):**
+
+```json
+{
+  "id": "uuid",
+  "codigoOrden": "ORD-LXYZ123-ABC4",
+  "solicitudId": "uuid",
+  "cotizacionId": "uuid",
+  "clienteId": "USER-DEMO-001",
+  "proveedorId": null,
+  "tipoServicio": "POR_TAREA",
+  "montoTotal": 5750.0,
+  "estado": "CREADA",
+  "fechaInicio": null,
+  "fechaFinalizacion": null,
+  "createdAt": "2026-03-06T10:00:00.000Z",
+  "cliente": {
+    "id": "USER-DEMO-001",
+    "nombre": "Juan Pérez",
+    "email": "juan@example.com"
+  },
+  "historialEstados": [
+    {
+      "estadoAnterior": null,
+      "estadoNuevo": "CREADA",
+      "motivo": "Orden creada mediante contratación",
+      "createdAt": "2026-03-06T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### 4. Cancelar Orden (Patrón Command)
+
+**PATCH** `/ordenes/:id/cancelar`
+
+Cancela una orden de servicio activa.
+
+**Body:**
+
+```json
+{
+  "motivo": "Cliente solicitó cancelación por cambio de prioridades",
+  "usuarioId": "USER-DEMO-001"
+}
+```
+
+**Respuesta exitosa (200):**
+
+```json
+{
+  "orden": {
+    "id": "uuid",
+    "codigoOrden": "ORD-LXYZ123-ABC4",
+    "estado": "CANCELADA",
+    "motivoCancelacion": "Cliente solicitó cancelación por cambio de prioridades"
+  },
+  "mensaje": "Orden cancelada exitosamente"
+}
+```
+
+---
+
+### 5. Filtrar Órdenes por Estado (Consulta avanzada)
+
+**GET** `/ordenes?estado=EN_PROGRESO`
+
+Lista órdenes filtradas por estado específico.
+
+**Query Parameters:**
+
+- `estado` (opcional): `CREADA` | `ASIGNADA` | `EN_PROGRESO` | `COMPLETADA` | `CANCELADA` | `REPROGRAMADA`
+- `clienteId` (opcional): UUID del cliente
+
+**Ejemplo:** `/ordenes?estado=EN_PROGRESO`
+
+**Respuesta exitosa (200):**
+
+```json
+{
+  "total": 3,
+  "ordenes": [
+    {
+      "id": "uuid",
+      "codigoOrden": "ORD-ABC123",
+      "estado": "EN_PROGRESO",
+      "montoTotal": 3500.0,
+      "tipoServicio": "POR_HORAS",
+      "cliente": { "nombre": "María López" },
+      "proveedor": { "nombre": "Carlos Tech" }
+    }
+  ]
+}
+```
+
+---
+
+### 6. Filtrar Órdenes por Rango de Fechas (Consulta avanzada)
+
+**GET** `/ordenes?desde=2026-01-01&hasta=2026-03-31`
+
+Lista órdenes creadas en un rango de fechas.
+
+**Query Parameters:**
+
+- `desde` (opcional): Fecha ISO 8601 (YYYY-MM-DD)
+- `hasta` (opcional): Fecha ISO 8601 (YYYY-MM-DD)
+
+**Ejemplo:** `/ordenes?desde=2026-01-01&hasta=2026-03-31`
+
+**Respuesta exitosa (200):**
+
+```json
+{
+  "total": 15,
+  "ordenes": [
+    {
+      "id": "uuid",
+      "codigoOrden": "ORD-DEF456",
+      "createdAt": "2026-02-15T08:30:00.000Z",
+      "estado": "COMPLETADA",
+      "montoTotal": 8000.0
+    }
+  ]
+}
+```
+
+---
+
+## 🎯 Endpoints Adicionales
+
+### 7. Contratar Servicio (Usa Facade)
+
+**POST** `/contratacion/contratar`
+
+Orquesta el proceso completo: validación → cotización → creación de orden.
+
+**Body:**
+
+```json
+{
+  "solicitudId": "uuid",
+  "clienteId": "USER-DEMO-001",
+  "tipoServicio": "POR_HORAS",
+  "parametrosServicio": {
+    "tarifaPorHora": 50,
+    "horasEstimadas": 40
+  }
+}
+```
+
+**Respuesta exitosa (201):**
+
+```json
+{
+  "orden": {
+    "id": "uuid",
+    "codigoOrden": "ORD-XYZ789",
+    "montoTotal": 2200.0,
+    "estado": "CREADA"
+  },
+  "cotizacion": {
+    "id": "uuid",
+    "montoTotal": 2200.0,
+    "duracionEstimadaHoras": 40
+  },
+  "mensaje": "Servicio contratado exitosamente"
+}
+```
+
+---
+
+### 8. Reprogramar Orden (Patrón Command)
+
+**PATCH** `/ordenes/:id/reprogramar`
+
+Cambia la fecha de inicio de una orden.
+
+**Body:**
+
+```json
+{
+  "nuevaFechaInicio": "2026-04-15",
+  "motivo": "Disponibilidad del proveedor",
+  "usuarioId": "USER-DEMO-001"
+}
+```
+
+---
+
+### 9. Confirmar Ejecución (Patrón Command)
+
+**PATCH** `/ordenes/:id/confirmar`
+
+Marca una orden como completada.
+
+**Body:**
+
+```json
+{
+  "usuarioId": "USER-DEMO-001",
+  "comentarios": "Servicio finalizado satisfactoriamente"
+}
+```
+
+**Respuesta exitosa (200):**
+
+```json
+{
+  "orden": {
+    "id": "uuid",
+    "estado": "COMPLETADA",
+    "fechaFinalizacion": "2026-03-06T18:00:00.000Z"
+  },
+  "mensaje": "Ejecución confirmada y orden completada"
+}
+```
+
+---
+
+## 📊 Códigos de Estado HTTP
+
+| Código | Significado                             |
+| ------ | --------------------------------------- |
+| 200    | Operación exitosa                       |
+| 201    | Recurso creado exitosamente             |
+| 400    | Solicitud inválida (validación fallida) |
+| 404    | Recurso no encontrado                   |
+| 500    | Error interno del servidor              |
+
+---
+
+## 🔄 Estados del Sistema
+
+### Estados de Solicitud
+
+- `PENDIENTE`: Recién creada, sin procesar
+- `EN_COTIZACION`: En proceso de cotización
+- `COTIZADA`: Cotización generada
+- `ACEPTADA`: Cliente aceptó y se creó orden
+- `RECHAZADA`: Cliente rechazó
+- `CANCELADA`: Cancelada antes de aceptar
+
+### Estados de Orden
+
+- `CREADA`: Orden generada, sin asignar
+- `ASIGNADA`: Proveedor asignado
+- `EN_PROGRESO`: En ejecución
+- `COMPLETADA`: Finalizada exitosamente
+- `CANCELADA`: Cancelada por cliente o sistema
+- `REPROGRAMADA`: Fecha reprogramada
+
+---
+
+## 🧪 Ejemplos de Uso con cURL
+
+### Crear Solicitud
+
+```bash
+curl -X POST http://localhost:3000/api/v1/solicitudes \
+  -H "Content-Type: application/json" \
+  -d '{
+    "titulo": "Desarrollo web",
+    "descripcion": "Sitio corporativo",
+    "clienteId": "USER-DEMO-001",
+    "tipoServicio": "POR_TAREA",
+    "presupuestoEstimado": 5000
+  }'
+```
+
+### Listar Órdenes por Estado
+
+```bash
+curl http://localhost:3000/api/v1/ordenes?estado=EN_PROGRESO
+```
+
+### Cancelar Orden
+
+```bash
+curl -X PATCH http://localhost:3000/api/v1/ordenes/{id}/cancelar \
+  -H "Content-Type: application/json" \
+  -d '{
+    "motivo": "Cambio de plan",
+    "usuarioId": "USER-DEMO-001"
+  }'
+```
+
+---
+
+## 📝 Notas Adicionales
+
+- Todos los IDs son UUIDs v4
+- Las fechas están en formato ISO 8601 (UTC)
+- Los montos son en punto flotante con 2 decimales
+- La API usa prefijo `/api/v1` para versionamiento
+- CORS habilitado para `http://localhost:5173` en desarrollo

@@ -1,0 +1,2 @@
+# Este archivo mantiene la carpeta migrations en Git
+# Las migraciones reales se generan con: npx prisma migrate dev

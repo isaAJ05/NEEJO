@@ -158,3 +158,4 @@ function CrearSolicitudPage() {
 }
 
 export default CrearSolicitudPage;
+export default CrearSolicitudPage;

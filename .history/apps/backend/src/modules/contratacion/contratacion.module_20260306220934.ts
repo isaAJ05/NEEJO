@@ -6,7 +6,6 @@ import { ContratacionController } from './presentation/controllers/contratacion.
 import { SolicitudController } from './presentation/controllers/solicitud.controller';
 import { OrdenController } from './presentation/controllers/orden.controller';
 import { UsuariosController } from './presentation/controllers/usuarios.controller';
-import { AuthController } from './presentation/controllers/auth.controller';
 
 // Use Cases - Facade
 import { ContratarServicioFacade } from './infrastructure/facades/contratar-servicio.facade';
@@ -34,7 +33,6 @@ import {
     SolicitudController,
     OrdenController,
     UsuariosController,
-    AuthController,
   ],
   providers: [
     PrismaService,

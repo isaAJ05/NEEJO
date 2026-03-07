@@ -1,14 +1,16 @@
-import { Module } from '@nestjs/common';
-import { PrismaService } from './infrastructure/persistence/prisma/prisma.service';
-
 // Controllers
 import { ContratacionController } from './presentation/controllers/contratacion.controller';
 import { SolicitudController } from './presentation/controllers/solicitud.controller';
 import { OrdenController } from './presentation/controllers/orden.controller';
 import { UsuariosController } from './presentation/controllers/usuarios.controller';
-import { AuthController } from './presentation/controllers/auth.controller';
 
-// Use Cases - Facade
+@Module({
+  controllers: [
+    ContratacionController,
+    SolicitudController,
+    OrdenController,
+    UsuariosController,
+  ],
 import { ContratarServicioFacade } from './infrastructure/facades/contratar-servicio.facade';
 
 // Factories
@@ -33,8 +35,6 @@ import {
     ContratacionController,
     SolicitudController,
     OrdenController,
-    UsuariosController,
-    AuthController,
   ],
   providers: [
     PrismaService,

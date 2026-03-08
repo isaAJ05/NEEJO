@@ -1,5 +1,5 @@
 import { TipoServicio } from '@prisma/client';
-
+import { Injectable } from '@nestjs/common';
 
 export interface IOrdenServicio {
   id?: string;
@@ -85,5 +85,26 @@ export class OrdenPorPaquete extends OrdenServicioBase {
 
   validarDatosEspecificos(): boolean {
     return this.cantidadEntregables > 0 && this.montoTotal > 0;
+  }
+}
+//Fabrica
+export class OrdenServicioFactory {
+  createOrden(
+    tipo: TipoServicio,
+    params: any,
+  ): IOrdenServicio {
+    switch (tipo) {
+      case TipoServicio.POR_HORAS:
+        return new OrdenPorHoras(params.tarifaPorHora, params.horasEstimadas);
+      
+      case TipoServicio.POR_TAREA:
+        return new OrdenPorTarea(params.montoBase, params.complejidad);
+      
+      case TipoServicio.POR_PAQUETE:
+        return new OrdenPorPaquete(params.montoPorEntregable, params.cantidadEntregables);
+      
+      default:
+        throw new Error(`Tipo de servicio no soportado: ${tipo}`);
+    }
   }
 }

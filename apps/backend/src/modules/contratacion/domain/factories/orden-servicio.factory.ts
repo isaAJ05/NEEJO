@@ -88,6 +88,7 @@ export class OrdenPorPaquete extends OrdenServicioBase {
   }
 }
 //Fabrica
+@Injectable()
 export class OrdenServicioFactory {
   createOrden(
     tipo: TipoServicio,

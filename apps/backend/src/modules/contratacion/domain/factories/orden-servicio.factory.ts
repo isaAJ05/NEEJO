@@ -1,5 +1,7 @@
-import { TipoServicio } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
+import { TipoServicio } from '../tipo-servicio.enum';
+
+// El enum y demás interfaces ya se definen en el archivo compartido
 
 export interface IOrdenServicio {
   id?: string;

@@ -1,20 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { TipoServicio } from '@prisma/client';
+import { TipoServicio } from '../enums/tipo-servicio.enum';
 
-/**
- * PATRÓN: Template Method (Comportamiento)
- * 
- * Propósito: Define el esqueleto de un algoritmo en una operación,
- * delegando algunos pasos a las subclases.
- * 
- * Ventajas:
- * - Define un flujo fijo con pasos personalizables
- * - Reutiliza código común entre variaciones
- * - Garantiza que ciertos pasos se ejecuten en orden específico
- * 
- * En este caso: el proceso de contratación tiene pasos fijos,
- * pero cada tipo de servicio tiene validaciones y cálculos específicos.
- */
 
 export interface DatosProcesoContratacion {
   clienteId: string;

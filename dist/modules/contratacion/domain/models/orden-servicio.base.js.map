@@ -1,1 +1,0 @@
-{"version":3,"file":"orden-servicio.base.js","sourceRoot":"","sources":["../../../../../apps/backend/src/modules/contratacion/domain/models/orden-servicio.base.ts"],"names":[],"mappings":";;;AAIA,MAAsB,iBAAiB;IAMrC,YAAY,YAA0B,EAAE,UAAkB;QACxD,IAAI,CAAC,YAAY,GAAG,YAAY,CAAC;QACjC,IAAI,CAAC,UAAU,GAAG,UAAU,CAAC;IAC/B,CAAC;CAIF;AAbD,8CAaC"}

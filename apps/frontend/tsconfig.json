@@ -28,6 +28,6 @@
       "@shared/*": ["src/shared/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "tsconfig.node.json", "vite.config.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

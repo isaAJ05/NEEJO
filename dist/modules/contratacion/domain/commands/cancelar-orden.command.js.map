@@ -1,0 +1,1 @@
+{"version":3,"file":"cancelar-orden.command.js","sourceRoot":"","sources":["../../../../../apps/backend/src/modules/contratacion/domain/commands/cancelar-orden.command.ts"],"names":[],"mappings":";;;AAEA,MAAa,oBAAoB;IAC/B,YAAoB,OAAe;QAAf,YAAO,GAAP,OAAO,CAAQ;IAAG,CAAC;IAEvC,KAAK,CAAC,OAAO;QACX,OAAO,CAAC,GAAG,CAAC,SAAS,IAAI,CAAC,OAAO,YAAY,CAAC,CAAC;IAEjD,CAAC;CACF;AAPD,oDAOC"}

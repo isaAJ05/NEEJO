@@ -16,28 +16,44 @@ const cancelar_orden_command_1 = require("../commands/cancelar-orden.command");
 const reprogramar_orden_command_1 = require("../commands/reprogramar-orden.command");
 const confirmar_ejecucion_command_1 = require("../commands/confirmar-ejecucion.command");
 let GestionOrdenesService = class GestionOrdenesService {
-    constructor(ejecutor) {
+    constructor(ejecutor, cancelarOrdenCommand, reprogramarOrdenCommand, confirmarEjecucionCommand) {
         this.ejecutor = ejecutor;
+        this.cancelarOrdenCommand = cancelarOrdenCommand;
+        this.reprogramarOrdenCommand = reprogramarOrdenCommand;
+        this.confirmarEjecucionCommand = confirmarEjecucionCommand;
     }
     async contratar(proceso, datos) {
         return await proceso.ejecutarProcesoCompleto(datos);
     }
-    async cancelarOrden(ordenId) {
-        const comando = new cancelar_orden_command_1.CancelarOrdenCommand(ordenId);
-        await this.ejecutor.ejecutar(comando);
+    async cancelarOrden(ordenId, motivo, usuarioId) {
+        await this.ejecutor.ejecutar(this.cancelarOrdenCommand, {
+            ordenId,
+            motivo,
+            usuarioId,
+        });
     }
-    async reprogramarOrden(ordenId, nuevaFecha) {
-        const comando = new reprogramar_orden_command_1.ReprogramarOrdenCommand(ordenId, nuevaFecha);
-        await this.ejecutor.ejecutar(comando);
+    async reprogramarOrden(ordenId, nuevaFecha, motivo, usuarioId) {
+        await this.ejecutor.ejecutar(this.reprogramarOrdenCommand, {
+            ordenId,
+            nuevaFechaInicio: nuevaFecha,
+            motivo,
+            usuarioId,
+        });
     }
-    async confirmarEjecucion(ordenId) {
-        const comando = new confirmar_ejecucion_command_1.ConfirmarEjecucionCommand(ordenId);
-        await this.ejecutor.ejecutar(comando);
+    async confirmarEjecucion(ordenId, usuarioId, comentarios) {
+        await this.ejecutor.ejecutar(this.confirmarEjecucionCommand, {
+            ordenId,
+            usuarioId,
+            comentarios,
+        });
     }
 };
 exports.GestionOrdenesService = GestionOrdenesService;
 exports.GestionOrdenesService = GestionOrdenesService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [ejecutor_comandos_service_1.EjecutorComandosService])
+    __metadata("design:paramtypes", [ejecutor_comandos_service_1.EjecutorComandosService,
+        cancelar_orden_command_1.CancelarOrdenCommand,
+        reprogramar_orden_command_1.ReprogramarOrdenCommand,
+        confirmar_ejecucion_command_1.ConfirmarEjecucionCommand])
 ], GestionOrdenesService);
 //# sourceMappingURL=gestion-ordenes.js.map

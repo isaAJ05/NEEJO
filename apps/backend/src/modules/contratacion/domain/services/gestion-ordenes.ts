@@ -12,6 +12,9 @@ import {
 export class GestionOrdenesService {
   constructor(
     private readonly ejecutor: EjecutorComandosService,
+    private readonly cancelarOrdenCommand: CancelarOrdenCommand,
+    private readonly reprogramarOrdenCommand: ReprogramarOrdenCommand,
+    private readonly confirmarEjecucionCommand: ConfirmarEjecucionCommand,
   ) {}
 
   // 🔹 Usar Template Method para contratar
@@ -23,18 +26,33 @@ export class GestionOrdenesService {
   }
 
   // 🔹 Acciones operativas con Command
-  async cancelarOrden(ordenId: string) {
-    const comando = new CancelarOrdenCommand(ordenId);
-    await this.ejecutor.ejecutar(comando);
+  async cancelarOrden(ordenId: string, motivo?: string, usuarioId?: string) {
+    await this.ejecutor.ejecutar(this.cancelarOrdenCommand, {
+      ordenId,
+      motivo,
+      usuarioId,
+    });
   }
 
-  async reprogramarOrden(ordenId: string, nuevaFecha: Date) {
-    const comando = new ReprogramarOrdenCommand(ordenId, nuevaFecha);
-    await this.ejecutor.ejecutar(comando);
+  async reprogramarOrden(
+    ordenId: string,
+    nuevaFecha: Date,
+    motivo?: string,
+    usuarioId?: string,
+  ) {
+    await this.ejecutor.ejecutar(this.reprogramarOrdenCommand, {
+      ordenId,
+      nuevaFechaInicio: nuevaFecha,
+      motivo,
+      usuarioId,
+    });
   }
 
-  async confirmarEjecucion(ordenId: string) {
-    const comando = new ConfirmarEjecucionCommand(ordenId);
-    await this.ejecutor.ejecutar(comando);
+  async confirmarEjecucion(ordenId: string, usuarioId?: string, comentarios?: string) {
+    await this.ejecutor.ejecutar(this.confirmarEjecucionCommand, {
+      ordenId,
+      usuarioId,
+      comentarios,
+    });
   }
 }

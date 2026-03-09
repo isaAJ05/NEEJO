@@ -1,4 +1,4 @@
-import { Command } from '../interfaces/command.interface';
+import { ICommand } from '../interfaces/command.interface';
 export declare class EjecutorComandosService {
-    ejecutar(comando: Command): Promise<void>;
+    ejecutar<TParams, TResult>(comando: ICommand<TParams, TResult>, params: TParams): Promise<TResult>;
 }

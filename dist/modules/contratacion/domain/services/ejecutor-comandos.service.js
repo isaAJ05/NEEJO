@@ -9,8 +9,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EjecutorComandosService = void 0;
 const common_1 = require("@nestjs/common");
 let EjecutorComandosService = class EjecutorComandosService {
-    async ejecutar(comando) {
-        await comando.execute();
+    async ejecutar(comando, params) {
+        return comando.execute(params);
     }
 };
 exports.EjecutorComandosService = EjecutorComandosService;

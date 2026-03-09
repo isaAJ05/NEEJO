@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { Command } from '../interfaces/command.interface';
+import { ICommand } from '../interfaces/command.interface';
 
 @Injectable()
 export class EjecutorComandosService {
-  async ejecutar(comando: Command): Promise<void> {
-    await comando.execute();
+  async ejecutar<TParams, TResult>(
+    comando: ICommand<TParams, TResult>,
+    params: TParams,
+  ): Promise<TResult> {
+    return comando.execute(params);
   }
 }

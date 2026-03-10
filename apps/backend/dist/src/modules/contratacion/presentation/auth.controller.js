@@ -33,7 +33,13 @@ let AuthController = class AuthController {
             },
         });
         if (!usuario) {
-            throw new common_1.BadRequestException(`Usuario con email "${body.email}" no encontrado. Usuarios disponibles: juan@example.com, maria@example.com, carlos@provider.com`);
+            const disponibles = await this.prisma.usuario.findMany({
+                select: { email: true },
+                orderBy: { email: 'asc' },
+            });
+            throw new common_1.BadRequestException(`Usuario con email "${body.email}" no encontrado. Usuarios disponibles: ${disponibles
+                .map((u) => u.email)
+                .join(', ')}`);
         }
         return {
             mensaje: 'Login exitoso',

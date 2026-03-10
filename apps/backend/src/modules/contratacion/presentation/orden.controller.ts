@@ -3,6 +3,7 @@ import { PrismaService } from '../infrastructure/persistence/prisma/prisma.servi
 import { CancelarOrdenCommand } from '../domain/commands/cancelar-orden.command';
 import { ReprogramarOrdenCommand } from '../domain/commands/reprogramar-orden.command';
 import { ConfirmarEjecucionCommand } from '../domain/commands/confirmar-ejecucion.command';
+import { EstadoOrden } from '@prisma/client';
 
 /**
  * CONTROLADOR PRINCIPAL: Órdenes de Servicio
@@ -36,6 +37,8 @@ export class OrdenController {
     @Query('desde') desde?: string,
     @Query('hasta') hasta?: string,
     @Query('clienteId') clienteId?: string,
+    @Query('proveedorId') proveedorId?: string,
+    @Query('usuarioId') usuarioId?: string,
   ) {
     const where: any = {};
 
@@ -45,6 +48,14 @@ export class OrdenController {
 
     if (clienteId) {
       where.clienteId = clienteId;
+    }
+
+    if (proveedorId) {
+      where.proveedorId = proveedorId;
+    }
+
+    if (usuarioId) {
+      where.OR = [{ clienteId: usuarioId }, { proveedorId: usuarioId }];
     }
 
     if (desde || hasta) {
@@ -143,5 +154,46 @@ export class OrdenController {
       usuarioId: body.usuarioId,
       comentarios: body.comentarios,
     });
+  }
+
+  /**
+   * ENDPOINT 6: Iniciar ejecucion de orden
+   * PATCH /api/v1/ordenes/:id/iniciar
+   */
+  @Patch(':id/iniciar')
+  async iniciarEjecucion(
+    @Param('id') id: string,
+    @Body() body: { usuarioId?: string; comentarios?: string },
+  ) {
+    const orden = await this.prisma.ordenServicio.findUnique({ where: { id } });
+    if (!orden) {
+      return { error: 'Orden no encontrada' };
+    }
+
+    if (orden.estado !== EstadoOrden.ASIGNADA && orden.estado !== EstadoOrden.REPROGRAMADA) {
+      return {
+        error: `Solo se puede iniciar una orden ASIGNADA o REPROGRAMADA. Estado actual: ${orden.estado}`,
+      };
+    }
+
+    const ordenActualizada = await this.prisma.ordenServicio.update({
+      where: { id },
+      data: { estado: EstadoOrden.EN_PROGRESO },
+    });
+
+    await this.prisma.historialEstado.create({
+      data: {
+        ordenId: id,
+        estadoAnterior: orden.estado,
+        estadoNuevo: EstadoOrden.EN_PROGRESO,
+        motivo: body.comentarios ?? 'Ejecucion iniciada',
+        cambiadoPor: body.usuarioId ?? 'SISTEMA',
+      },
+    });
+
+    return {
+      mensaje: 'Orden iniciada correctamente',
+      orden: ordenActualizada,
+    };
   }
 }

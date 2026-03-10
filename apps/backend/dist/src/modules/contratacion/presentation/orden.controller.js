@@ -18,6 +18,7 @@ const prisma_service_1 = require("../infrastructure/persistence/prisma/prisma.se
 const cancelar_orden_command_1 = require("../domain/commands/cancelar-orden.command");
 const reprogramar_orden_command_1 = require("../domain/commands/reprogramar-orden.command");
 const confirmar_ejecucion_command_1 = require("../domain/commands/confirmar-ejecucion.command");
+const client_1 = require("@prisma/client");
 let OrdenController = class OrdenController {
     constructor(prisma, cancelarCommand, reprogramarCommand, confirmarCommand) {
         this.prisma = prisma;
@@ -25,13 +26,19 @@ let OrdenController = class OrdenController {
         this.reprogramarCommand = reprogramarCommand;
         this.confirmarCommand = confirmarCommand;
     }
-    async listarOrdenes(estado, desde, hasta, clienteId) {
+    async listarOrdenes(estado, desde, hasta, clienteId, proveedorId, usuarioId) {
         const where = {};
         if (estado) {
             where.estado = estado;
         }
         if (clienteId) {
             where.clienteId = clienteId;
+        }
+        if (proveedorId) {
+            where.proveedorId = proveedorId;
+        }
+        if (usuarioId) {
+            where.OR = [{ clienteId: usuarioId }, { proveedorId: usuarioId }];
         }
         if (desde || hasta) {
             where.createdAt = {};
@@ -95,6 +102,34 @@ let OrdenController = class OrdenController {
             comentarios: body.comentarios,
         });
     }
+    async iniciarEjecucion(id, body) {
+        const orden = await this.prisma.ordenServicio.findUnique({ where: { id } });
+        if (!orden) {
+            return { error: 'Orden no encontrada' };
+        }
+        if (orden.estado !== client_1.EstadoOrden.ASIGNADA && orden.estado !== client_1.EstadoOrden.REPROGRAMADA) {
+            return {
+                error: `Solo se puede iniciar una orden ASIGNADA o REPROGRAMADA. Estado actual: ${orden.estado}`,
+            };
+        }
+        const ordenActualizada = await this.prisma.ordenServicio.update({
+            where: { id },
+            data: { estado: client_1.EstadoOrden.EN_PROGRESO },
+        });
+        await this.prisma.historialEstado.create({
+            data: {
+                ordenId: id,
+                estadoAnterior: orden.estado,
+                estadoNuevo: client_1.EstadoOrden.EN_PROGRESO,
+                motivo: body.comentarios ?? 'Ejecucion iniciada',
+                cambiadoPor: body.usuarioId ?? 'SISTEMA',
+            },
+        });
+        return {
+            mensaje: 'Orden iniciada correctamente',
+            orden: ordenActualizada,
+        };
+    }
 };
 exports.OrdenController = OrdenController;
 __decorate([
@@ -103,8 +138,10 @@ __decorate([
     __param(1, (0, common_1.Query)('desde')),
     __param(2, (0, common_1.Query)('hasta')),
     __param(3, (0, common_1.Query)('clienteId')),
+    __param(4, (0, common_1.Query)('proveedorId')),
+    __param(5, (0, common_1.Query)('usuarioId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], OrdenController.prototype, "listarOrdenes", null);
 __decorate([
@@ -138,6 +175,14 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], OrdenController.prototype, "confirmarEjecucion", null);
+__decorate([
+    (0, common_1.Patch)(':id/iniciar'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], OrdenController.prototype, "iniciarEjecucion", null);
 exports.OrdenController = OrdenController = __decorate([
     (0, common_1.Controller)('ordenes'),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,

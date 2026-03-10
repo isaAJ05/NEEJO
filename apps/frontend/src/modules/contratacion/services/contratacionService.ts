@@ -84,8 +84,8 @@ class ContratacionService {
    */
   async cancelarOrden(ordenId: string, motivo?: string, usuarioId?: string) {
     try {
-      const response = await apiClient.post(
-        `/contratacion/${ordenId}/cancelar`,
+      const response = await apiClient.patch(
+        `/ordenes/${ordenId}/cancelar`,
         { motivo, usuarioId }
       );
       return response.data;
@@ -106,10 +106,10 @@ class ContratacionService {
     usuarioId?: string
   ) {
     try {
-      const response = await apiClient.post(
-        `/contratacion/${ordenId}/reprogramar`,
+      const response = await apiClient.patch(
+        `/ordenes/${ordenId}/reprogramar`,
         {
-          nuevaFecha,
+          nuevaFechaInicio: nuevaFecha.toISOString(),
           motivo,
           usuarioId,
         }
@@ -131,8 +131,8 @@ class ContratacionService {
     comentarios?: string
   ) {
     try {
-      const response = await apiClient.post(
-        `/contratacion/${ordenId}/confirmar`,
+      const response = await apiClient.patch(
+        `/ordenes/${ordenId}/confirmar`,
         { usuarioId, comentarios }
       );
       return response.data;
@@ -148,7 +148,7 @@ class ContratacionService {
    */
   async obtenerMisOrdenes(clienteId: string) {
     try {
-      const response = await apiClient.get(`/contratacion/cliente/${clienteId}`);
+      const response = await apiClient.get(`/ordenes?clienteId=${clienteId}`);
       return response.data;
     } catch (error: any) {
       throw new Error(
@@ -162,7 +162,7 @@ class ContratacionService {
    */
   async obtenerOrden(ordenId: string) {
     try {
-      const response = await apiClient.get(`/contratacion/${ordenId}`);
+      const response = await apiClient.get(`/ordenes/${ordenId}`);
       return response.data;
     } catch (error: any) {
       throw new Error(

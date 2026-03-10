@@ -8,7 +8,7 @@ export declare class OrdenController {
     private readonly reprogramarCommand;
     private readonly confirmarCommand;
     constructor(prisma: PrismaService, cancelarCommand: CancelarOrdenCommand, reprogramarCommand: ReprogramarOrdenCommand, confirmarCommand: ConfirmarEjecucionCommand);
-    listarOrdenes(estado?: string, desde?: string, hasta?: string, clienteId?: string): Promise<{
+    listarOrdenes(estado?: string, desde?: string, hasta?: string, clienteId?: string, proveedorId?: string, usuarioId?: string): Promise<{
         total: number;
         ordenes: ({
             cotizacion: {
@@ -137,4 +137,31 @@ export declare class OrdenController {
         usuarioId?: string;
         comentarios?: string;
     }): Promise<any>;
+    iniciarEjecucion(id: string, body: {
+        usuarioId?: string;
+        comentarios?: string;
+    }): Promise<{
+        error: string;
+        mensaje?: undefined;
+        orden?: undefined;
+    } | {
+        mensaje: string;
+        orden: {
+            solicitudId: string;
+            cotizacionId: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            codigoOrden: string;
+            clienteId: string;
+            proveedorId: string | null;
+            tipoServicio: import(".prisma/client").$Enums.TipoServicio;
+            montoTotal: number;
+            estado: import(".prisma/client").$Enums.EstadoOrden;
+            fechaInicio: Date | null;
+            fechaFinalizacion: Date | null;
+            motivoCancelacion: string | null;
+        };
+        error?: undefined;
+    }>;
 }

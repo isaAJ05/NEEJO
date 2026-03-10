@@ -7,13 +7,14 @@ import '../styles/LoginPage.css';
  */
 
 const usuarios = [
-  { email: 'juan@example.com', nombre: 'Juan García', rol: 'CLIENTE' },
-  { email: 'maria@example.com', nombre: 'María López', rol: 'CLIENTE' },
-  { email: 'carlos@provider.com', nombre: 'Carlos Proveedor', rol: 'PROVEEDOR' },
+  { email: 'ana@demo.com', nombre: 'Ana Torres', rol: 'AMBOS' },
+  { email: 'bruno@demo.com', nombre: 'Bruno Rojas', rol: 'AMBOS' },
+  { email: 'carla@demo.com', nombre: 'Carla Mendez', rol: 'AMBOS' },
+  { email: 'diego@demo.com', nombre: 'Diego Pardo', rol: 'AMBOS' },
 ];
 
 export function LoginPage() {
-  const { login, cargando, error, usuario } = useAuth();
+  const { login, logout, cargando, error, usuario } = useAuth();
 
   const manejarLogin = async (email: string) => {
     try {
@@ -44,8 +45,6 @@ export function LoginPage() {
           <button
             className="btn-logout"
             onClick={() => {
-              const { useAuth: useAuthLogout } = require('../hooks/useAuth');
-              const { logout } = useAuthLogout();
               logout();
               window.location.href = '/login';
             }}

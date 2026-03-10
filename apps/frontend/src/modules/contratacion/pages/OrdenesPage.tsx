@@ -4,21 +4,38 @@ import { OrdenServicio, EstadoOrden } from '../types';
 
 function OrdenesPage() {
   const [ordenes, setOrdenes] = useState<OrdenServicio[]>([]);
+  const [misContrataciones, setMisContrataciones] = useState<OrdenServicio[]>([]);
+  const [misServiciosTomados, setMisServiciosTomados] = useState<OrdenServicio[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filtroEstado, setFiltroEstado] = useState('');
+  const [usuarioId, setUsuarioId] = useState('');
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   useEffect(() => {
-    fetchOrdenes();
+    const usuarioGuardado = localStorage.getItem('usuario');
+    if (usuarioGuardado) {
+      const usuario = JSON.parse(usuarioGuardado);
+      setUsuarioId(usuario.id);
+      fetchOrdenes(usuario.id);
+    }
   }, [filtroEstado]);
 
-  const fetchOrdenes = async () => {
+  const fetchOrdenes = async (id: string = usuarioId) => {
+    if (!id) return;
+
     try {
       setLoading(true);
-      const params = filtroEstado ? `?estado=${filtroEstado}` : '';
-      const response = await apiClient.get(`/ordenes${params}`);
-      setOrdenes(response.data.ordenes || []);
+      const params = new URLSearchParams({ usuarioId: id });
+      if (filtroEstado) {
+        params.append('estado', filtroEstado);
+      }
+
+      const response = await apiClient.get(`/ordenes?${params.toString()}`);
+      const data = response.data.ordenes || [];
+      setOrdenes(data);
+      setMisContrataciones(data.filter((orden: OrdenServicio) => orden.clienteId === id));
+      setMisServiciosTomados(data.filter((orden: OrdenServicio) => orden.proveedorId === id));
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Error al cargar órdenes');
@@ -34,7 +51,7 @@ function OrdenesPage() {
     try {
       await apiClient.patch(`/ordenes/${ordenId}/cancelar`, { motivo });
       setMessage({ type: 'success', text: 'Orden cancelada exitosamente' });
-      fetchOrdenes();
+      fetchOrdenes(usuarioId);
     } catch (err: any) {
       setMessage({ type: 'error', text: err.response?.data?.message || 'Error al cancelar orden' });
     }
@@ -49,11 +66,25 @@ function OrdenesPage() {
       await apiClient.patch(`/ordenes/${ordenId}/reprogramar`, {
         nuevaFechaInicio: fecha,
         motivo,
+        usuarioId,
       });
       setMessage({ type: 'success', text: 'Orden reprogramada exitosamente' });
-      fetchOrdenes();
+      fetchOrdenes(usuarioId);
     } catch (err: any) {
       setMessage({ type: 'error', text: err.response?.data?.message || 'Error al reprogramar orden' });
+    }
+  };
+
+  const handleIniciar = async (ordenId: string) => {
+    try {
+      await apiClient.patch(`/ordenes/${ordenId}/iniciar`, {
+        usuarioId,
+        comentarios: 'Inicio desde el front de demo',
+      });
+      setMessage({ type: 'success', text: 'Orden en ejecucion' });
+      fetchOrdenes(usuarioId);
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.response?.data?.error || 'Error al iniciar orden' });
     }
   };
 
@@ -63,7 +94,7 @@ function OrdenesPage() {
     try {
       await apiClient.patch(`/ordenes/${ordenId}/confirmar`, { comentarios });
       setMessage({ type: 'success', text: 'Orden confirmada exitosamente' });
-      fetchOrdenes();
+      fetchOrdenes(usuarioId);
     } catch (err: any) {
       setMessage({ type: 'error', text: err.response?.data?.message || 'Error al confirmar orden' });
     }
@@ -99,7 +130,7 @@ function OrdenesPage() {
             <option value="COMPLETADA">Completada</option>
             <option value="CANCELADA">Cancelada</option>
           </select>
-          <button className="btn btn-primary" onClick={fetchOrdenes}>
+          <button className="btn btn-primary" onClick={() => fetchOrdenes(usuarioId)}>
             🔄 Actualizar
           </button>
         </div>
@@ -115,11 +146,17 @@ function OrdenesPage() {
 
       {ordenes.length === 0 ? (
         <div className="card">
-          <p>No hay órdenes registradas aún.</p>
+          <p>No tienes ordenes vinculadas.</p>
         </div>
       ) : (
+        <>
+        <div className="card">
+          <h3>Como cliente: servicios que contrataste</h3>
+          <p style={{ marginTop: '0.5rem' }}>Solo tu y quien ofrece el servicio ven estas ordenes.</p>
+        </div>
+
         <div className="grid">
-          {ordenes.map((orden) => (
+          {misContrataciones.map((orden) => (
             <div key={orden.id} className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                 <div>
@@ -151,6 +188,14 @@ function OrdenesPage() {
                     ❌ Cancelar
                   </button>
                 )}
+                {(orden.estado === EstadoOrden.ASIGNADA || orden.estado === EstadoOrden.REPROGRAMADA) && (
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => handleIniciar(orden.id)}
+                  >
+                    ▶️ Iniciar
+                  </button>
+                )}
                 {orden.estado === EstadoOrden.CREADA && (
                   <button 
                     className="btn btn-warning" 
@@ -171,6 +216,39 @@ function OrdenesPage() {
             </div>
           ))}
         </div>
+
+        <div className="card" style={{ marginTop: '2rem' }}>
+          <h3>Como proveedor: servicios que tomaste</h3>
+          <p style={{ marginTop: '0.5rem' }}>Aqui gestionas tus trabajos activos y finalizados.</p>
+        </div>
+
+        <div className="grid">
+          {misServiciosTomados.map((orden) => (
+            <div key={orden.id} className="card">
+              <h3>🔖 {orden.codigoOrden}</h3>
+              <span className={getEstadoBadge(orden.estado)}>{orden.estado}</span>
+              <p style={{ marginTop: '0.5rem' }}>
+                Cliente: <strong>{orden.cliente?.nombre || orden.clienteId}</strong>
+              </p>
+              <p>
+                Monto: <strong>${orden.montoTotal.toFixed(2)}</strong>
+              </p>
+              <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {(orden.estado === EstadoOrden.ASIGNADA || orden.estado === EstadoOrden.REPROGRAMADA) && (
+                  <button className="btn btn-primary" onClick={() => handleIniciar(orden.id)}>
+                    ▶️ Iniciar
+                  </button>
+                )}
+                {orden.estado === EstadoOrden.EN_PROGRESO && (
+                  <button className="btn btn-success" onClick={() => handleConfirmar(orden.id)}>
+                    ✅ Finalizar
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        </>
       )}
     </div>
   );

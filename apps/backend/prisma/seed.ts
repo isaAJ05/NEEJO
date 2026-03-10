@@ -3,164 +3,199 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Iniciando seed de datos de prueba...');
+  console.log('Iniciando seed de demo marketplace...');
 
-  // Limpiar datos existentes (opcional)
+  // Limpieza
   await prisma.historialEstado.deleteMany({});
   await prisma.ordenServicio.deleteMany({});
   await prisma.cotizacion.deleteMany({});
   await prisma.solicitudServicio.deleteMany({});
   await prisma.usuario.deleteMany({});
 
-  // Crear usuarios de prueba
-  const usuarioCliente1 = await prisma.usuario.create({
+  // Usuarios unicos que pueden contratar y ofrecer servicios
+  const ana = await prisma.usuario.create({
     data: {
-      nombre: 'Juan García',
-      email: 'juan@example.com',
-      telefono: '3001234567',
-      rol: 'CLIENTE',
+      nombre: 'Ana Torres',
+      email: 'ana@demo.com',
+      telefono: '3001111111',
+      rol: 'AMBOS',
     },
   });
 
-  const usuarioCliente2 = await prisma.usuario.create({
+  const bruno = await prisma.usuario.create({
     data: {
-      nombre: 'María López',
-      email: 'maria@example.com',
-      telefono: '3009876543',
-      rol: 'CLIENTE',
+      nombre: 'Bruno Rojas',
+      email: 'bruno@demo.com',
+      telefono: '3002222222',
+      rol: 'AMBOS',
     },
   });
 
-  const usuarioProveedor = await prisma.usuario.create({
+  const carla = await prisma.usuario.create({
     data: {
-      nombre: 'Carlos Proveedor',
-      email: 'carlos@provider.com',
-      telefono: '3005555555',
-      rol: 'PROVEEDOR',
+      nombre: 'Carla Mendez',
+      email: 'carla@demo.com',
+      telefono: '3003333333',
+      rol: 'AMBOS',
     },
   });
 
-  console.log('✅ Usuarios creados:');
-  console.log(`  - Cliente 1: ${usuarioCliente1.id}`);
-  console.log(`  - Cliente 2: ${usuarioCliente2.id}`);
-  console.log(`  - Proveedor: ${usuarioProveedor.id}`);
-
-  // Crear solicitudes de prueba
-  const solicitud1 = await prisma.solicitudServicio.create({
+  const diego = await prisma.usuario.create({
     data: {
-      titulo: 'Desarrollo de sitio web',
-      descripcion: 'Necesito un sitio responsivo para mi negocio',
-      clienteId: usuarioCliente1.id,
+      nombre: 'Diego Pardo',
+      email: 'diego@demo.com',
+      telefono: '3004444444',
+      rol: 'AMBOS',
+    },
+  });
+
+  console.log('Usuarios creados:');
+  console.log(`- Ana: ${ana.id} (${ana.email})`);
+  console.log(`- Bruno: ${bruno.id} (${bruno.email})`);
+  console.log(`- Carla: ${carla.id} (${carla.email})`);
+  console.log(`- Diego: ${diego.id} (${diego.email})`);
+
+  // Solicitudes abiertas (visibles para todos)
+  const s1 = await prisma.solicitudServicio.create({
+    data: {
+      titulo: 'Landing page para emprendimiento',
+      descripcion: 'Necesito una landing de 4 secciones con formulario de contacto.',
+      clienteId: ana.id,
       tipoServicio: 'POR_TAREA',
-      presupuestoEstimado: 5000,
+      presupuestoEstimado: 800,
+      estado: 'PENDIENTE',
     },
   });
 
-  const solicitud2 = await prisma.solicitudServicio.create({
+  const s2 = await prisma.solicitudServicio.create({
     data: {
-      titulo: 'Asesoría técnica',
-      descripcion: 'Necesito revisar mi arquitectura de software',
-      clienteId: usuarioCliente2.id,
+      titulo: 'Soporte de integracion API por horas',
+      descripcion: 'Ayuda para integrar pagos y resolver errores de autenticacion.',
+      clienteId: carla.id,
       tipoServicio: 'POR_HORAS',
-      presupuestoEstimado: 2000,
+      presupuestoEstimado: 600,
+      estado: 'PENDIENTE',
     },
   });
 
-  console.log('✅ Solicitudes creadas:');
-  console.log(`  - Solicitud 1: ${solicitud1.id}`);
-  console.log(`  - Solicitud 2: ${solicitud2.id}`);
-
-  // Crear cotizaciones
-  const cotizacion1 = await prisma.cotizacion.create({
+  // Solicitud ya tomada (solo visible entre cliente y proveedor en vistas de ordenes)
+  const s3 = await prisma.solicitudServicio.create({
     data: {
-      solicitudId: solicitud1.id,
-      montoTotal: 4500,
-      duracionEstimadaHoras: 40,
-      descripcionDetalle: 'Sitio con 5 páginas, responsive, formulario de contacto',
+      titulo: 'Paquete de 6 piezas para redes sociales',
+      descripcion: 'Diseno de piezas para campana de lanzamiento.',
+      clienteId: bruno.id,
+      tipoServicio: 'POR_PAQUETE',
+      presupuestoEstimado: 1200,
+      estado: 'ACEPTADA',
     },
   });
 
-  const cotizacion2 = await prisma.cotizacion.create({
+  const c3 = await prisma.cotizacion.create({
     data: {
-      solicitudId: solicitud2.id,
-      montoTotal: 1800,
-      duracionEstimadaHoras: 20,
-      descripcionDetalle: 'Revisión de código y sesiones de consultoría',
+      solicitudId: s3.id,
+      montoTotal: 1150,
+      duracionEstimadaHoras: 24,
+      descripcionDetalle: 'Incluye 6 entregables + 1 ronda de ajustes.',
     },
   });
 
-  console.log('✅ Cotizaciones creadas:');
-  console.log(`  - Cotización 1: ${cotizacion1.id}`);
-  console.log(`  - Cotización 2: ${cotizacion2.id}`);
-
-  // Crear órdenes de servicio
-  const orden1 = await prisma.ordenServicio.create({
+  const o3 = await prisma.ordenServicio.create({
     data: {
-      codigoOrden: `ORD-${Date.now()}-1`,
-      solicitudId: solicitud1.id,
-      cotizacionId: cotizacion1.id,
-      clienteId: usuarioCliente1.id,
-      proveedorId: usuarioProveedor.id,
-      tipoServicio: 'POR_TAREA',
-      montoTotal: 4500,
+      codigoOrden: 'ORD-DEMO-001',
+      solicitudId: s3.id,
+      cotizacionId: c3.id,
+      clienteId: bruno.id,
+      proveedorId: diego.id,
+      tipoServicio: 'POR_PAQUETE',
+      montoTotal: 1150,
       estado: 'ASIGNADA',
-      fechaInicio: new Date(Date.now() + 86400000), // Mañana
+      fechaInicio: new Date(Date.now() + 1000 * 60 * 60 * 24),
     },
   });
 
-  const orden2 = await prisma.ordenServicio.create({
-    data: {
-      codigoOrden: `ORD-${Date.now()}-2`,
-      solicitudId: solicitud2.id,
-      cotizacionId: cotizacion2.id,
-      clienteId: usuarioCliente2.id,
-      proveedorId: usuarioProveedor.id,
-      tipoServicio: 'POR_HORAS',
-      montoTotal: 1800,
-      estado: 'EN_PROGRESO',
-      fechaInicio: new Date(),
-    },
-  });
-
-  console.log('✅ Órdenes de servicio creadas:');
-  console.log(`  - Orden 1: ${orden1.id}`);
-  console.log(`  - Orden 2: ${orden2.id}`);
-
-  // Crear historial de estado
   await prisma.historialEstado.create({
     data: {
-      ordenId: orden1.id,
+      ordenId: o3.id,
       estadoAnterior: 'CREADA',
       estadoNuevo: 'ASIGNADA',
-      motivo: 'Orden asignada al proveedor',
-      cambiadoPor: 'SISTEMA',
+      motivo: 'Solicitud aceptada por Diego',
+      cambiadoPor: diego.id,
     },
   });
 
-  await prisma.historialEstado.create({
+  // Solicitud completada para mostrar historico
+  const s4 = await prisma.solicitudServicio.create({
     data: {
-      ordenId: orden2.id,
-      estadoAnterior: 'CREADA',
-      estadoNuevo: 'EN_PROGRESO',
-      motivo: 'Proveedor comenzó la ejecución',
-      cambiadoPor: usuarioProveedor.id,
+      titulo: 'Automatizacion de reportes semanales',
+      descripcion: 'Script para consolidar datos y exportar CSV.',
+      clienteId: diego.id,
+      tipoServicio: 'POR_HORAS',
+      presupuestoEstimado: 500,
+      estado: 'ACEPTADA',
     },
   });
 
-  console.log('✅ Historial de estados creado');
+  const c4 = await prisma.cotizacion.create({
+    data: {
+      solicitudId: s4.id,
+      montoTotal: 520,
+      duracionEstimadaHoras: 10,
+      descripcionDetalle: '10 horas de implementacion y pruebas.',
+    },
+  });
 
-  console.log('\n🎉 Seed completado exitosamente!');
-  console.log('\n📊 Datos de prueba disponibles:');
-  console.log(`   - Usuarios: 3 (2 clientes, 1 proveedor)`);
-  console.log(`   - Solicitudes: 2`);
-  console.log(`   - Cotizaciones: 2`);
-  console.log(`   - Órdenes: 2`);
-  console.log('\nPrueba los endpoints en Postman o tu navegador.');
+  const o4 = await prisma.ordenServicio.create({
+    data: {
+      codigoOrden: 'ORD-DEMO-002',
+      solicitudId: s4.id,
+      cotizacionId: c4.id,
+      clienteId: diego.id,
+      proveedorId: ana.id,
+      tipoServicio: 'POR_HORAS',
+      montoTotal: 520,
+      estado: 'COMPLETADA',
+      fechaInicio: new Date(Date.now() - 1000 * 60 * 60 * 48),
+      fechaFinalizacion: new Date(Date.now() - 1000 * 60 * 60 * 24),
+    },
+  });
+
+  await prisma.historialEstado.createMany({
+    data: [
+      {
+        ordenId: o4.id,
+        estadoAnterior: 'CREADA',
+        estadoNuevo: 'ASIGNADA',
+        motivo: 'Solicitud aceptada por Ana',
+        cambiadoPor: ana.id,
+      },
+      {
+        ordenId: o4.id,
+        estadoAnterior: 'ASIGNADA',
+        estadoNuevo: 'EN_PROGRESO',
+        motivo: 'Inicio de ejecucion',
+        cambiadoPor: ana.id,
+      },
+      {
+        ordenId: o4.id,
+        estadoAnterior: 'EN_PROGRESO',
+        estadoNuevo: 'COMPLETADA',
+        motivo: 'Entrega aprobada por el cliente',
+        cambiadoPor: diego.id,
+      },
+    ],
+  });
+
+  console.log('Seed completado');
+  console.log('Resumen demo:');
+  console.log('- Usuarios: 4 (todos AMBOS)');
+  console.log('- Solicitudes abiertas: 2 (visibles para todos)');
+  console.log('- Solicitudes tomadas: 2 (con ordenes entre partes)');
+  console.log('Credenciales login por email: ana@demo.com, bruno@demo.com, carla@demo.com, diego@demo.com');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error en seed:', e);
+    console.error('Error en seed:', e);
     process.exit(1);
   })
   .finally(async () => {

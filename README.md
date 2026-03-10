@@ -1,7 +1,8 @@
-# NEEJO
+# NEEJO 💼
 
 Plataforma para la contratación de servicios dentro de un
 Marketplace de trabajos cortos, permite **publicar** una solicitud, **aceptarla**, **ejecutarla**, **finalizarla**, y también **cancelarla o reprogramarla**.
+-> https://www.youtube.com/watch?v=Px94UDtl2g0
 
 ## Descripción general
 
@@ -16,7 +17,7 @@ NEEJO modela un flujo típico de contratación/ejecución de servicios, controla
 - Cancelar servicio
 - Reprogramar servicio
 
-## Arquitectura y patrones de diseño (obligatorios)
+## Arquitectura y patrones de diseño implementados
 
 Este proyecto aplica **4 patrones** de diseño:
 
@@ -68,13 +69,9 @@ Instalación:
 npm install
 ```
 
-Ejecución (ejemplos):
+Ejecución:
 ```bash
 npm run dev
-# o
-npm start
-# o
-npm test
 ```
 ## Uso (flujo básico)
 
@@ -84,3 +81,4 @@ npm test
 4. Se **finaliza** al completar.
 5. Alternativamente, se puede **cancelar** o **reprogramar** usando comandos.
 ---
+Por: Natalia Carpintero, Isabella Arrieta, Paula Núñez y Luis Robles

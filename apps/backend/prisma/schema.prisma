@@ -115,6 +115,11 @@ model OrdenServicio {
   fechaInicio     DateTime?
   fechaFinalizacion DateTime?
   motivoCancelacion String?
+  fechaInicioPropuesta DateTime?
+  motivoReprogramacion String?
+  propuestaReprogramacionPorId String?
+  propuestaReprogramacionParaId String?
+  estadoSolicitudReprogramacion EstadoSolicitudReprogramacion?
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -141,6 +146,12 @@ enum EstadoOrden {
   COMPLETADA
   CANCELADA
   REPROGRAMADA
+}
+
+enum EstadoSolicitudReprogramacion {
+  PENDIENTE
+  ACEPTADA
+  RECHAZADA
 }
 
 // ============================================

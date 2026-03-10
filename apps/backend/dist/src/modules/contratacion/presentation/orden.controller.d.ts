@@ -2,12 +2,16 @@ import { PrismaService } from '../infrastructure/persistence/prisma/prisma.servi
 import { CancelarOrdenCommand } from '../domain/commands/cancelar-orden.command';
 import { ReprogramarOrdenCommand } from '../domain/commands/reprogramar-orden.command';
 import { ConfirmarEjecucionCommand } from '../domain/commands/confirmar-ejecucion.command';
+import { SolicitarReprogramacionCommand } from '../domain/commands/solicitar-reprogramacion.command';
+import { ResponderReprogramacionCommand } from '../domain/commands/responder-reprogramacion.command';
 export declare class OrdenController {
     private readonly prisma;
     private readonly cancelarCommand;
     private readonly reprogramarCommand;
+    private readonly solicitarReprogramacionCommand;
+    private readonly responderReprogramacionCommand;
     private readonly confirmarCommand;
-    constructor(prisma: PrismaService, cancelarCommand: CancelarOrdenCommand, reprogramarCommand: ReprogramarOrdenCommand, confirmarCommand: ConfirmarEjecucionCommand);
+    constructor(prisma: PrismaService, cancelarCommand: CancelarOrdenCommand, reprogramarCommand: ReprogramarOrdenCommand, solicitarReprogramacionCommand: SolicitarReprogramacionCommand, responderReprogramacionCommand: ResponderReprogramacionCommand, confirmarCommand: ConfirmarEjecucionCommand);
     listarOrdenes(estado?: string, desde?: string, hasta?: string, clienteId?: string, proveedorId?: string, usuarioId?: string): Promise<{
         total: number;
         ordenes: ({
@@ -56,6 +60,11 @@ export declare class OrdenController {
             fechaInicio: Date | null;
             fechaFinalizacion: Date | null;
             motivoCancelacion: string | null;
+            fechaInicioPropuesta: Date | null;
+            motivoReprogramacion: string | null;
+            propuestaReprogramacionPorId: string | null;
+            propuestaReprogramacionParaId: string | null;
+            estadoSolicitudReprogramacion: import(".prisma/client").$Enums.EstadoSolicitudReprogramacion | null;
         })[];
     }>;
     obtenerOrden(id: string): Promise<({
@@ -121,6 +130,11 @@ export declare class OrdenController {
         fechaInicio: Date | null;
         fechaFinalizacion: Date | null;
         motivoCancelacion: string | null;
+        fechaInicioPropuesta: Date | null;
+        motivoReprogramacion: string | null;
+        propuestaReprogramacionPorId: string | null;
+        propuestaReprogramacionParaId: string | null;
+        estadoSolicitudReprogramacion: import(".prisma/client").$Enums.EstadoSolicitudReprogramacion | null;
     }) | {
         error: string;
     }>;
@@ -130,8 +144,13 @@ export declare class OrdenController {
     }): Promise<any>;
     reprogramarOrden(id: string, body: {
         nuevaFechaInicio: string;
-        motivo: string;
-        usuarioId?: string;
+        motivo?: string;
+        usuarioId: string;
+    }): Promise<any>;
+    responderReprogramacion(id: string, body: {
+        usuarioId: string;
+        aceptar: boolean;
+        motivoRechazo?: string;
     }): Promise<any>;
     confirmarEjecucion(id: string, body: {
         usuarioId?: string;
@@ -161,6 +180,11 @@ export declare class OrdenController {
             fechaInicio: Date | null;
             fechaFinalizacion: Date | null;
             motivoCancelacion: string | null;
+            fechaInicioPropuesta: Date | null;
+            motivoReprogramacion: string | null;
+            propuestaReprogramacionPorId: string | null;
+            propuestaReprogramacionParaId: string | null;
+            estadoSolicitudReprogramacion: import(".prisma/client").$Enums.EstadoSolicitudReprogramacion | null;
         };
         error?: undefined;
     }>;

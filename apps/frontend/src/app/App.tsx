@@ -32,8 +32,8 @@ function App() {
     <div className="app">
       <header className="header">
         <div className="container">
-          <h1>⚙️ Contratación de Servicio</h1>
-          <p>Marketplace de trabajos cortos - Grupo 5</p>
+          <h1>⚙️ NEEJO </h1>
+          <p>Contratación de Servicio</p>
         </div>
       </header>
 
@@ -81,7 +81,7 @@ function App() {
 
       <footer className="footer">
         <div className="container">
-          <p>© 2026 Grupo 5 - Taller de Patrones de Diseño</p>
+          <p>© 2026 NIPL </p>
         </div>
       </footer>
     </div>

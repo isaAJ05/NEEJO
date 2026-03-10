@@ -22,6 +22,12 @@ export enum EstadoOrden {
   REPROGRAMADA = 'REPROGRAMADA',
 }
 
+export enum EstadoSolicitudReprogramacion {
+  PENDIENTE = 'PENDIENTE',
+  ACEPTADA = 'ACEPTADA',
+  RECHAZADA = 'RECHAZADA',
+}
+
 export interface Usuario {
   id: string;
   nombre: string;
@@ -54,8 +60,13 @@ export interface OrdenServicio {
   montoTotal: number;
   estado: EstadoOrden;
   fechaInicio?: string;
+  fechaInicioPropuesta?: string;
   fechaFinalizacion?: string;
   motivoCancelacion?: string;
+  motivoReprogramacion?: string;
+  propuestaReprogramacionPorId?: string;
+  propuestaReprogramacionParaId?: string;
+  estadoSolicitudReprogramacion?: EstadoSolicitudReprogramacion;
   createdAt: string;
   updatedAt: string;
   cliente?: Usuario;

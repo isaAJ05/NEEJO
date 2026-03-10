@@ -10,6 +10,8 @@ import { PrismaService } from './infrastructure/persistence/prisma/prisma.servic
 import { CancelarOrdenCommand } from './domain/commands/cancelar-orden.command';
 import { ReprogramarOrdenCommand } from './domain/commands/reprogramar-orden.command';
 import { ConfirmarEjecucionCommand } from './domain/commands/confirmar-ejecucion.command';
+import { SolicitarReprogramacionCommand } from './domain/commands/solicitar-reprogramacion.command';
+import { ResponderReprogramacionCommand } from './domain/commands/responder-reprogramacion.command';
 import { ContratacionFacade } from './infrastructure/facades/contratacion.facade';
 import { OrdenServicioFactory } from './domain/factories/orden-servicio.factory';
 import {
@@ -35,6 +37,8 @@ import {
     ContratacionPorPaquete,
     CancelarOrdenCommand,
     ReprogramarOrdenCommand,
+    SolicitarReprogramacionCommand,
+    ResponderReprogramacionCommand,
     ConfirmarEjecucionCommand,
     EjecutorComandosService,
     GestionOrdenesService,

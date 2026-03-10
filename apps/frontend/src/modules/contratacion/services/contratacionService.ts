@@ -123,6 +123,32 @@ class ContratacionService {
   }
 
   /**
+   * RESPONDER SOLICITUD DE REPROGRAMACION
+   */
+  async responderReprogramacion(
+    ordenId: string,
+    aceptar: boolean,
+    usuarioId: string,
+    motivoRechazo?: string,
+  ) {
+    try {
+      const response = await apiClient.patch(
+        `/ordenes/${ordenId}/reprogramar/responder`,
+        {
+          aceptar,
+          usuarioId,
+          motivoRechazo,
+        },
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(
+        error.response?.data?.message || 'Error al responder reprogramacion',
+      );
+    }
+  }
+
+  /**
    * CONFIRMAR EJECUCIÓN DE UNA ORDEN
    */
   async confirmarEjecucion(

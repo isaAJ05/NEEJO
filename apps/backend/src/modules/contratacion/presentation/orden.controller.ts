@@ -3,6 +3,8 @@ import { PrismaService } from '../infrastructure/persistence/prisma/prisma.servi
 import { CancelarOrdenCommand } from '../domain/commands/cancelar-orden.command';
 import { ReprogramarOrdenCommand } from '../domain/commands/reprogramar-orden.command';
 import { ConfirmarEjecucionCommand } from '../domain/commands/confirmar-ejecucion.command';
+import { SolicitarReprogramacionCommand } from '../domain/commands/solicitar-reprogramacion.command';
+import { ResponderReprogramacionCommand } from '../domain/commands/responder-reprogramacion.command';
 import { EstadoOrden } from '@prisma/client';
 
 /**
@@ -22,6 +24,8 @@ export class OrdenController {
     private readonly prisma: PrismaService,
     private readonly cancelarCommand: CancelarOrdenCommand,
     private readonly reprogramarCommand: ReprogramarOrdenCommand,
+    private readonly solicitarReprogramacionCommand: SolicitarReprogramacionCommand,
+    private readonly responderReprogramacionCommand: ResponderReprogramacionCommand,
     private readonly confirmarCommand: ConfirmarEjecucionCommand,
   ) {}
 
@@ -130,13 +134,30 @@ export class OrdenController {
   @Patch(':id/reprogramar')
   async reprogramarOrden(
     @Param('id') id: string,
-    @Body() body: { nuevaFechaInicio: string; motivo: string; usuarioId?: string },
+    @Body() body: { nuevaFechaInicio: string; motivo?: string; usuarioId: string },
   ) {
-    return await this.reprogramarCommand.execute({
+    return await this.solicitarReprogramacionCommand.execute({
       ordenId: id,
       nuevaFechaInicio: new Date(body.nuevaFechaInicio),
       motivo: body.motivo,
       usuarioId: body.usuarioId,
+    });
+  }
+
+  /**
+   * ENDPOINT 4.1: Responder solicitud de reprogramacion
+   * PATCH /api/v1/ordenes/:id/reprogramar/responder
+   */
+  @Patch(':id/reprogramar/responder')
+  async responderReprogramacion(
+    @Param('id') id: string,
+    @Body() body: { usuarioId: string; aceptar: boolean; motivoRechazo?: string },
+  ) {
+    return await this.responderReprogramacionCommand.execute({
+      ordenId: id,
+      usuarioId: body.usuarioId,
+      aceptar: body.aceptar,
+      motivoRechazo: body.motivoRechazo,
     });
   }
 

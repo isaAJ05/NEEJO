@@ -18,12 +18,16 @@ const prisma_service_1 = require("../infrastructure/persistence/prisma/prisma.se
 const cancelar_orden_command_1 = require("../domain/commands/cancelar-orden.command");
 const reprogramar_orden_command_1 = require("../domain/commands/reprogramar-orden.command");
 const confirmar_ejecucion_command_1 = require("../domain/commands/confirmar-ejecucion.command");
+const solicitar_reprogramacion_command_1 = require("../domain/commands/solicitar-reprogramacion.command");
+const responder_reprogramacion_command_1 = require("../domain/commands/responder-reprogramacion.command");
 const client_1 = require("@prisma/client");
 let OrdenController = class OrdenController {
-    constructor(prisma, cancelarCommand, reprogramarCommand, confirmarCommand) {
+    constructor(prisma, cancelarCommand, reprogramarCommand, solicitarReprogramacionCommand, responderReprogramacionCommand, confirmarCommand) {
         this.prisma = prisma;
         this.cancelarCommand = cancelarCommand;
         this.reprogramarCommand = reprogramarCommand;
+        this.solicitarReprogramacionCommand = solicitarReprogramacionCommand;
+        this.responderReprogramacionCommand = responderReprogramacionCommand;
         this.confirmarCommand = confirmarCommand;
     }
     async listarOrdenes(estado, desde, hasta, clienteId, proveedorId, usuarioId) {
@@ -88,11 +92,19 @@ let OrdenController = class OrdenController {
         });
     }
     async reprogramarOrden(id, body) {
-        return await this.reprogramarCommand.execute({
+        return await this.solicitarReprogramacionCommand.execute({
             ordenId: id,
             nuevaFechaInicio: new Date(body.nuevaFechaInicio),
             motivo: body.motivo,
             usuarioId: body.usuarioId,
+        });
+    }
+    async responderReprogramacion(id, body) {
+        return await this.responderReprogramacionCommand.execute({
+            ordenId: id,
+            usuarioId: body.usuarioId,
+            aceptar: body.aceptar,
+            motivoRechazo: body.motivoRechazo,
         });
     }
     async confirmarEjecucion(id, body) {
@@ -168,6 +180,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], OrdenController.prototype, "reprogramarOrden", null);
 __decorate([
+    (0, common_1.Patch)(':id/reprogramar/responder'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], OrdenController.prototype, "responderReprogramacion", null);
+__decorate([
     (0, common_1.Patch)(':id/confirmar'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
@@ -188,6 +208,8 @@ exports.OrdenController = OrdenController = __decorate([
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         cancelar_orden_command_1.CancelarOrdenCommand,
         reprogramar_orden_command_1.ReprogramarOrdenCommand,
+        solicitar_reprogramacion_command_1.SolicitarReprogramacionCommand,
+        responder_reprogramacion_command_1.ResponderReprogramacionCommand,
         confirmar_ejecucion_command_1.ConfirmarEjecucionCommand])
 ], OrdenController);
 //# sourceMappingURL=orden.controller.js.map

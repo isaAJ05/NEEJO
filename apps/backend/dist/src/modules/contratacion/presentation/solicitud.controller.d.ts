@@ -142,6 +142,11 @@ export declare class SolicitudController {
             fechaInicio: Date | null;
             fechaFinalizacion: Date | null;
             motivoCancelacion: string | null;
+            fechaInicioPropuesta: Date | null;
+            motivoReprogramacion: string | null;
+            propuestaReprogramacionPorId: string | null;
+            propuestaReprogramacionParaId: string | null;
+            estadoSolicitudReprogramacion: import(".prisma/client").$Enums.EstadoSolicitudReprogramacion | null;
         };
     }>;
     obtenerSolicitud(id: string): Promise<{
@@ -169,6 +174,11 @@ export declare class SolicitudController {
             fechaInicio: Date | null;
             fechaFinalizacion: Date | null;
             motivoCancelacion: string | null;
+            fechaInicioPropuesta: Date | null;
+            motivoReprogramacion: string | null;
+            propuestaReprogramacionPorId: string | null;
+            propuestaReprogramacionParaId: string | null;
+            estadoSolicitudReprogramacion: import(".prisma/client").$Enums.EstadoSolicitudReprogramacion | null;
         }[];
         cotizaciones: {
             solicitudId: string;

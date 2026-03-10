@@ -19,6 +19,8 @@ const prisma_service_1 = require("./infrastructure/persistence/prisma/prisma.ser
 const cancelar_orden_command_1 = require("./domain/commands/cancelar-orden.command");
 const reprogramar_orden_command_1 = require("./domain/commands/reprogramar-orden.command");
 const confirmar_ejecucion_command_1 = require("./domain/commands/confirmar-ejecucion.command");
+const solicitar_reprogramacion_command_1 = require("./domain/commands/solicitar-reprogramacion.command");
+const responder_reprogramacion_command_1 = require("./domain/commands/responder-reprogramacion.command");
 const contratacion_facade_1 = require("./infrastructure/facades/contratacion.facade");
 const orden_servicio_factory_1 = require("./domain/factories/orden-servicio.factory");
 const proceso_contratacion_template_1 = require("./domain/services/proceso-contratacion.template");
@@ -43,6 +45,8 @@ exports.ContratacionModule = ContratacionModule = __decorate([
             proceso_contratacion_template_1.ContratacionPorPaquete,
             cancelar_orden_command_1.CancelarOrdenCommand,
             reprogramar_orden_command_1.ReprogramarOrdenCommand,
+            solicitar_reprogramacion_command_1.SolicitarReprogramacionCommand,
+            responder_reprogramacion_command_1.ResponderReprogramacionCommand,
             confirmar_ejecucion_command_1.ConfirmarEjecucionCommand,
             ejecutor_comandos_service_1.EjecutorComandosService,
             gestion_ordenes_1.GestionOrdenesService,

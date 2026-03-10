@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import apiClient from '@shared/services/api';
-import { OrdenServicio, EstadoOrden } from '../types';
+import { OrdenServicio, EstadoOrden, EstadoSolicitudReprogramacion } from '../types';
 
 function OrdenesPage() {
   const [ordenes, setOrdenes] = useState<OrdenServicio[]>([]);
@@ -58,21 +58,114 @@ function OrdenesPage() {
   };
 
   const handleReprogramar = async (ordenId: string) => {
-    const fecha = prompt('Ingrese nueva fecha (YYYY-MM-DD):');
+    const fecha = prompt('Ingrese nueva fecha y hora (YYYY-MM-DDTHH:mm):');
     const motivo = prompt('Ingrese el motivo de reprogramación:');
     if (!fecha || !motivo) return;
 
     try {
       await apiClient.patch(`/ordenes/${ordenId}/reprogramar`, {
-        nuevaFechaInicio: fecha,
+        nuevaFechaInicio: new Date(fecha).toISOString(),
         motivo,
         usuarioId,
       });
-      setMessage({ type: 'success', text: 'Orden reprogramada exitosamente' });
+      setMessage({ type: 'success', text: 'Solicitud de reprogramacion enviada. Esperando respuesta de la contraparte.' });
       fetchOrdenes(usuarioId);
     } catch (err: any) {
       setMessage({ type: 'error', text: err.response?.data?.message || 'Error al reprogramar orden' });
     }
+  };
+
+  const handleResponderReprogramacion = async (
+    ordenId: string,
+    aceptar: boolean,
+  ) => {
+    const motivoRechazo = aceptar
+      ? undefined
+      : prompt('Motivo del rechazo de la reprogramacion:') || undefined;
+
+    if (!aceptar && !motivoRechazo) {
+      return;
+    }
+
+    try {
+      await apiClient.patch(`/ordenes/${ordenId}/reprogramar/responder`, {
+        usuarioId,
+        aceptar,
+        motivoRechazo,
+      });
+
+      setMessage({
+        type: 'success',
+        text: aceptar
+          ? 'Reprogramacion aceptada y aplicada.'
+          : 'Reprogramacion rechazada.',
+      });
+      fetchOrdenes(usuarioId);
+    } catch (err: any) {
+      setMessage({
+        type: 'error',
+        text:
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          'Error al responder reprogramacion',
+      });
+    }
+  };
+
+  const renderReprogramacionInfo = (orden: OrdenServicio) => {
+    if (orden.estadoSolicitudReprogramacion !== EstadoSolicitudReprogramacion.PENDIENTE) {
+      return null;
+    }
+
+    const fecha = orden.fechaInicioPropuesta
+      ? new Date(orden.fechaInicioPropuesta).toLocaleString('es-ES')
+      : 'Sin fecha';
+    const yoPropuse = orden.propuestaReprogramacionPorId === usuarioId;
+
+    return (
+      <div className="card" style={{ marginTop: '0.75rem', padding: '0.75rem', background: '#fff8e1' }}>
+        <p><strong>Solicitud pendiente de reprogramacion</strong></p>
+        <p>Nueva fecha propuesta: <strong>{fecha}</strong></p>
+        <p>Motivo: {orden.motivoReprogramacion || 'Sin motivo'}</p>
+        <p>{yoPropuse ? 'Estado: Esperando respuesta de la contraparte.' : 'Estado: Debes aceptar o rechazar la solicitud.'}</p>
+      </div>
+    );
+  };
+
+  const renderReprogramacionAcciones = (orden: OrdenServicio) => {
+    const pendiente = orden.estadoSolicitudReprogramacion === EstadoSolicitudReprogramacion.PENDIENTE;
+
+    if (!pendiente && orden.estado !== EstadoOrden.CANCELADA && orden.estado !== EstadoOrden.COMPLETADA) {
+      return (
+        <button
+          className="btn btn-warning"
+          onClick={() => handleReprogramar(orden.id)}
+        >
+          📅 Solicitar reprogramar
+        </button>
+      );
+    }
+
+    if (pendiente && orden.propuestaReprogramacionParaId === usuarioId) {
+      return (
+        <>
+          <button
+            className="btn btn-success"
+            onClick={() => handleResponderReprogramacion(orden.id, true)}
+          >
+            ✅ Aceptar cambio
+          </button>
+          <button
+            className="btn btn-danger"
+            onClick={() => handleResponderReprogramacion(orden.id, false)}
+          >
+            ❌ Rechazar cambio
+          </button>
+        </>
+      );
+    }
+
+    return null;
   };
 
   const handleIniciar = async (ordenId: string) => {
@@ -179,6 +272,8 @@ function OrdenesPage() {
                 </p>
               </div>
 
+              {renderReprogramacionInfo(orden)}
+
               <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {orden.estado !== EstadoOrden.CANCELADA && orden.estado !== EstadoOrden.COMPLETADA && (
                   <button 
@@ -196,14 +291,7 @@ function OrdenesPage() {
                     ▶️ Iniciar
                   </button>
                 )}
-                {orden.estado === EstadoOrden.CREADA && (
-                  <button 
-                    className="btn btn-warning" 
-                    onClick={() => handleReprogramar(orden.id)}
-                  >
-                    📅 Reprogramar
-                  </button>
-                )}
+                {renderReprogramacionAcciones(orden)}
                 {orden.estado === EstadoOrden.EN_PROGRESO && (
                   <button 
                     className="btn btn-success" 
@@ -233,12 +321,16 @@ function OrdenesPage() {
               <p>
                 Monto: <strong>${orden.montoTotal.toFixed(2)}</strong>
               </p>
+
+              {renderReprogramacionInfo(orden)}
+
               <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {(orden.estado === EstadoOrden.ASIGNADA || orden.estado === EstadoOrden.REPROGRAMADA) && (
                   <button className="btn btn-primary" onClick={() => handleIniciar(orden.id)}>
                     ▶️ Iniciar
                   </button>
                 )}
+                {renderReprogramacionAcciones(orden)}
                 {orden.estado === EstadoOrden.EN_PROGRESO && (
                   <button className="btn btn-success" onClick={() => handleConfirmar(orden.id)}>
                     ✅ Finalizar

@@ -1,0 +1,40 @@
+// ============================================
+// ENTIDAD 2: SolicitudServicio
+// ============================================
+model SolicitudServicio {
+  id          String   @id @default(uuid())
+  titulo      String
+  descripcion String
+  clienteId   String
+  tipoServicio TipoServicio
+  presupuestoEstimado Float?
+  estado      EstadoSolicitud @default(PENDIENTE)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  cliente     Usuario @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  cotizaciones Cotizacion[]
+  ordenes     OrdenServicio[]
+
+  @@map("solicitudes_servicio")
+  @@index([clienteId])
+  @@index([estado])
+  @@index([tipoServicio])
+}
+
+enum TipoServicio {
+  POR_HORAS
+  POR_TAREA
+  POR_PAQUETE
+}
+
+enum EstadoSolicitud {
+  PENDIENTE
+  EN_COTIZACION
+  COTIZADA
+  ACEPTADA
+  RECHAZADA
+  CANCELADA
+}

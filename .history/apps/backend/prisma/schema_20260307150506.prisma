@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENTIDAD 1: Usuario
+// ============================================
+model Usuario {
+  id        String   @id @default(uuid())
+  nombre    String
+  email     String   @unique
+  password  String
+  rol       String   @default("CLIENTE")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  solicitudes SolicitudServicio[]
+
+  @@map("usuarios")
+}
+
+// ============================================
+// ENTIDAD 2: SolicitudServicio
+// ============================================
+model SolicitudServicio {
+  id          String   @id @default(uuid())
+  titulo      String
+  descripcion String
+  clienteId   String
+  tipoServicio TipoServicio
+  presupuestoEstimado Float?
+  estado      EstadoSolicitud @default(PENDIENTE)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  cliente     Usuario @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  cotizaciones Cotizacion[]
+  ordenes     OrdenServicio[]
+
+  @@map("solicitudes_servicio")
+  @@index([clienteId])
+  @@index([estado])
+  @@index([tipoServicio])
+}
+
+// ============================================
+// ENTIDAD 3: Cotizacion
+// ============================================
+model Cotizacion {
+  id                  String   @id @default(uuid())
+  solicitudId         String
+  monto               Float
+  duracionEstimada    Int // en días
+  descripcion         String
+  estado              String   @default("PENDIENTE")
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relaciones
+  solicitud           SolicitudServicio @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
+
+  @@map("cotizaciones")
+  @@index([solicitudId])
+}
+
+// ============================================
+// ENTIDAD 4: OrdenServicio
+// ============================================
+model OrdenServicio {
+  id                  String   @id @default(uuid())
+  solicitudId         String
+  estado              String   @default("PENDIENTE")
+  fechaInicio         DateTime?
+  fechaFin            DateTime?
+  montoTotal          Float
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relaciones
+  solicitud           SolicitudServicio @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
+
+  @@map("ordenes_servicio")
+  @@index([solicitudId])
+}
+
+enum TipoServicio {
+  POR_HORAS
+  POR_TAREA
+  POR_PAQUETE
+}
+
+enum EstadoSolicitud {
+  PENDIENTE
+  EN_COTIZACION
+  COTIZADA
+  ACEPTADA
+  RECHAZADA
+  CANCELADA
+}

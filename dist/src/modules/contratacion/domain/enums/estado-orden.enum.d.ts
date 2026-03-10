@@ -1,0 +1,8 @@
+export declare enum EstadoOrden {
+    CREADA = "CREADA",
+    ASIGNADA = "ASIGNADA",
+    EN_PROGRESO = "EN_PROGRESO",
+    COMPLETADA = "COMPLETADA",
+    CANCELADA = "CANCELADA",
+    REPROGRAMADA = "REPROGRAMADA"
+}

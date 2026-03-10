@@ -2,7 +2,8 @@
 
 Plataforma para la contratación de servicios dentro de un
 Marketplace de trabajos cortos, permite **publicar** una solicitud, **aceptarla**, **ejecutarla**, **finalizarla**, y también **cancelarla o reprogramarla**.
--> https://www.youtube.com/watch?v=Px94UDtl2g0
+
+📽️ https://www.youtube.com/watch?v=Px94UDtl2g0
 
 ## Descripción general
 
